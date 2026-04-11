@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HiredBack — Demo</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMEQxMTE3IiByeD0iNiIvPgogIDx0ZXh0IHg9IjE2IiB5PSIyMyIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRjBFREU2Ij5IPC90ZXh0PgogIDxyZWN0IHg9IjYiIHk9IjI1IiB3aWR0aD0iMjAiIGhlaWdodD0iMiIgZmlsbD0iI0YwQTUwMCIgcng9IjEiLz4KPC9zdmc+Cg=="/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0D1117;--card:#161B22;--card2:#1C2128;--border:#30363D;
+  --accent:#F0A500;--adim:rgba(240,165,0,0.12);
+  --text:#F0EDE6;--muted:#8B949E;
+  --ok:#3FB950;--bad:#F85149;--warn:#D29922;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;}
+.screen{padding:0 20px 48px;display:none;}
+.screen.active{display:block;}
+header{position:sticky;top:0;z-index:10;background:rgba(13,17,23,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:16px;text-align:center;}
+.logo{font-family:'Playfair Display',serif;font-weight:700;font-size:1.25rem;}
+.logo span{color:var(--accent);}
+h1{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,8vw,2.5rem);line-height:1.15;}
+h2{font-family:'Playfair Display',serif;font-size:1.5rem;}
+.tag{display:inline-flex;align-items:center;gap:6px;background:var(--adim);border:1px solid rgba(240,165,0,0.25);border-radius:99px;padding:5px 13px;font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px;}
+.card2{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
+.btn{width:100%;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;padding:15px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.btn-primary{background:var(--accent);color:#0D1117;}
+.btn-primary:hover{background:#FFB800;}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);font-size:.9rem;}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.upload-zone{border:2px dashed var(--border);border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--card2);margin-bottom:14px;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--adim);}
+.upload-icon{font-size:2.2rem;color:var(--accent);margin-bottom:10px;}
+textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:14px;resize:vertical;min-height:180px;line-height:1.6;outline:none;transition:border-color .2s;margin-bottom:6px;}
+textarea:focus{border-color:var(--accent);}
+textarea::placeholder{color:var(--muted);}
+.char-count{font-size:.73rem;text-align:right;margin-bottom:14px;}
+.price-card{border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:all .2s;background:var(--card2);margin-bottom:12px;position:relative;}
+.price-card:hover,.price-card.sel{border-color:var(--accent);}
+.price-card.sel{background:var(--adim);}
+.price-amount{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--accent);}
+.best-tag{position:absolute;top:-10px;right:14px;background:var(--accent);color:#0D1117;font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em;}
+.steps{display:flex;justify-content:center;gap:8px;margin-bottom:24px;padding-top:8px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .3s;}
+.dot.done{background:var(--ok);}
+.dot.active{background:var(--accent);box-shadow:0 0 8px rgba(240,165,0,.5);}
+.tabs{display:flex;gap:8px;margin-bottom:14px;}
+.tab{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.83rem;background:var(--card2);color:var(--muted);transition:all .2s;}
+.tab.active{background:var(--accent);color:#0D1117;}
+.score-wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-top:8px;}
+.score-label{font-size:.78rem;color:var(--muted);text-align:center;margin-top:6px;font-weight:500;}
+.score-num{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;}
+.diff-box{text-align:center;padding:6px 10px;border-radius:8px;font-weight:700;font-size:1rem;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:.7rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+.badge-high{background:rgba(248,81,73,.15);color:var(--bad);}
+.badge-medium{background:rgba(210,153,34,.15);color:var(--warn);}
+.badge-low{background:rgba(63,185,80,.15);color:var(--ok);}
+.diag-item{padding:12px 0;border-bottom:1px solid var(--border);}
+.diag-item:last-child{border-bottom:none;}
+.diag-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;}
+.diag-cat{font-weight:600;font-size:.86rem;}
+.diag-issue{color:var(--muted);font-size:.81rem;line-height:1.6;}
+.scrollable{max-height:55vh;overflow-y:auto;padding-right:4px;}
+.scrollable::-webkit-scrollbar{width:4px;}
+.scrollable::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+.cv-out{white-space:pre-wrap;font-size:.84rem;line-height:1.7;}
+.info-box{background:var(--adim);border:1px solid rgba(240,165,0,.2);border-radius:12px;padding:14px;font-size:.83rem;line-height:1.6;margin-bottom:16px;}
+.demo-box{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.25);border-radius:10px;padding:12px;font-size:.8rem;color:var(--muted);margin-bottom:14px;}
+.err-box{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:10px;padding:12px 16px;font-size:.83rem;color:var(--bad);margin-bottom:12px;}
+.phone-tip{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+.processing-center{text-align:center;padding:80px 0;}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.8);}40%{opacity:1;transform:scale(1);}}
+.dots span{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin:0 3px;animation:pulse 1.2s ease-in-out infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+.proc-msg{color:var(--accent);font-weight:500;font-size:.95rem;min-height:24px;transition:all .4s;}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+.row{display:flex;gap:8px;margin-bottom:8px;}
+.row .btn-ghost{flex:1;margin-bottom:0;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--adim);border:1px solid rgba(240,165,0,.3);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:var(--accent);flex-shrink:0;}
+.tip-row{display:flex;gap:10px;margin-bottom:10px;}
+.tip-icon{flex-shrink:0;font-size:1rem;}
+.tip-text{color:var(--muted);font-size:.8rem;line-height:1.6;}
+input[type=file]{display:none;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- PASSWORD GATE -->
+  <div id="s-gate" class="screen active" style="padding-top:0;">
+    <header><div class="logo">Hired<span>Back</span></div></header>
+    <div style="padding:60px 20px 48px;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:20px;">🔒</div>
+      <h2 style="margin-bottom:8px;">Demo Access</h2>
+      <p style="color:var(--muted);font-size:.9rem;line-height:1.7;margin-bottom:32px;">This is a private demo of HiredBack. Enter the access code you were given to continue.</p>
+      <div style="margin-bottom:12px;">
+        <input type="password" id="demo-password" placeholder="Enter access code" style="text-align:center;font-size:1rem;letter-spacing:.1em;"
+          onkeydown="if(event.key==='Enter')checkPassword()"/>
+      </div>
+      <div id="gate-err" style="color:var(--bad);font-size:.82rem;margin-bottom:12px;display:none;">Incorrect access code — please try again.</div>
+      <button class="btn btn-primary" onclick="checkPassword()">Continue →</button>
+      <p style="margin-top:24px;color:var(--muted);font-size:.78rem;">Want full access? Visit <a href="https://app.hiredback.co.uk" style="color:var(--accent);">app.hiredback.co.uk</a></p>
+    </div>
+  </div>
+
+  <!-- WELCOME -->
+  <div id="s-welcome" class="screen" style="padding-top:0;">
+    <header><div class="logo">Hired<span>Back</span></div></header>
+    <div style="padding:32px 20px 48px;">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div class="tag" style="margin-bottom:18px;">● UK Job Market Specialist</div>
+        <h1 style="margin-bottom:16px;">Not getting<br/><em style="color:var(--accent)">interviews?</em><br/>Let's fix that.</h1>
+        <p style="color:var(--muted);line-height:1.7;margin-bottom:10px;">Your employer should be helping you with your CV when you're made redundant. If they're not — <strong style="color:var(--text)">we will.</strong></p>
+        <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">Upload your CV, paste a job ad, and we'll tell you exactly why you're not getting interviews — then rewrite it.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;">How it works</div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;"><div style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">📄</div><div><div style="font-weight:600;font-size:.88rem;margin-bottom:2px;">Upload your CV</div><div style="color:var(--muted);font-size:.8rem;">PDF or Word document — we read both</div></div></div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;"><div style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">📋</div><div><div style="font-weight:600;font-size:.88rem;margin-bottom:2px;">Paste the job ad</div><div style="color:var(--muted);font-size:.8rem;">Copy it straight from the job listing</div></div></div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;"><div style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">🔍</div><div><div style="font-weight:600;font-size:.88rem;margin-bottom:2px;">Get your diagnosis</div><div style="color:var(--muted);font-size:.8rem;">We reveal exactly why you're being overlooked</div></div></div>
+        <div style="display:flex;gap:12px;"><div style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">✨</div><div><div style="font-weight:600;font-size:.88rem;margin-bottom:2px;">Receive your rewritten CV</div><div style="color:var(--muted);font-size:.8rem;">Tailored, modern & ATS-optimised</div></div></div>
+      </div>
+      <div class="info-box">
+        <strong style="color:var(--accent);">Did you know?</strong> Most CVs are rejected by automated software before a human ever reads them. HiredBack shows you your ATS score before <em>and</em> after — so you can see the difference.
+      </div>
+      <button class="btn btn-primary" onclick="go('payment')" style="font-size:1.05rem;">Start My CV Diagnosis →</button>
+      <div style="text-align:center;color:var(--muted);font-size:.78rem;">£4 per use · £15 for 10 uses · Results in under 2 minutes</div>
+    </div>
+  </div>
+
+  <!-- PAYMENT -->
+  <div id="s-payment" class="screen">
+    <header><div class="logo">Hired<span>Back</span></div></header>
+    <div style="padding-top:28px;">
+      <h2 style="margin-bottom:6px;">Choose your plan</h2>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:22px;">One-off payment. No subscription. No nonsense.</p>
+      <div class="price-card sel" id="pc-single" onclick="selectPlan('single')">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-weight:600;margin-bottom:4px;">Single use</div><div style="color:var(--muted);font-size:.8rem;">One CV tailored to one job ad</div></div>
+          <div class="price-amount">£4</div>
+        </div>
+      </div>
+      <div class="price-card" id="pc-bundle" onclick="selectPlan('bundle')">
+        <div class="best-tag">Best value</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-weight:600;margin-bottom:4px;">10 uses bundle</div><div style="color:var(--muted);font-size:.8rem;">Apply to multiple roles — £1.50 each</div></div>
+          <div class="price-amount">£15</div>
+        </div>
+      </div>
+      <div class="demo-box"><strong style="color:var(--ok);">Demo mode:</strong> Payment bypassed. Connect Stripe for live payments.</div>
+      <button class="btn btn-primary" onclick="go('upload')">Continue →</button>
+      <div style="text-align:center;color:var(--muted);font-size:.75rem;">🔒 Your CV is never stored · Results delivered instantly</div>
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div id="s-upload" class="screen">
+    <header><div class="logo">Hired<span>Back</span></div></header>
+    <div style="padding-top:20px;">
+      <div class="steps"><div class="dot active" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div></div>
+      <h2 style="margin-bottom:6px;">Upload your CV</h2>
+      <p style="color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:20px;">We accept both PDF and Word documents — grab it from Files, Drive, wherever it lives.</p>
+      <input type="file" id="cv-input" accept=".pdf,.docx" onchange="handleFile(this)"/>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('cv-input').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="event.preventDefault();this.classList.remove('drag');handleFileDrop(event)">
+        <div id="upload-idle">
+          <div class="upload-icon">⬆</div>
+          <div style="font-weight:600;margin-bottom:4px;">Tap to upload your CV</div>
+          <div style="font-size:.8rem;color:var(--muted);">PDF or Word (.docx) · Max 10MB</div>
+        </div>
+        <div id="upload-done" style="display:none;">
+          <div style="font-size:2rem;margin-bottom:8px;">✅</div>
+          <div id="upload-name" style="font-weight:600;margin-bottom:4px;"></div>
+          <div id="upload-size" style="font-size:.78rem;color:var(--muted);">Tap to change</div>
+        </div>
+      </div>
+      <div id="upload-err" class="err-box" style="display:none;"></div>
+      <div class="phone-tip"><strong style="color:var(--text);">📱 On your phone?</strong> Tap above and select your CV from Files, Google Drive, or any cloud storage.</div>
+      <button class="btn btn-primary" id="btn-next-upload" disabled onclick="go('jobad')">Next — Add job ad →</button>
+      <button class="btn btn-ghost" onclick="go('payment')">← Back</button>
+    </div>
+  </div>
+
+  <!-- JOB AD -->
+  <div id="s-jobad" class="screen">
+    <header><div class="logo">Hired<span>Back</span></div></header>
+    <div style="padding-top:20px;">
+      <div class="steps"><div class="dot done"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+      <h2 style="margin-bottom:6px;">Paste the job ad</h2>
+      <p style="color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:18px;">Copy the full job description from the listing. The more detail, the better your tailored CV will be.</p>
+      <div id="api-err" class="err-box" style="display:none;"></div>
+      <textarea id="job-ad" placeholder="Paste the full job description here...&#10;&#10;Include job title, responsibilities, requirements and any other details from the listing." oninput="checkJobAd()"></textarea>
+      <div class="char-count" id="char-count" style="color:var(--muted);">0 characters (min 200)</div>
+      <div id="short-warn" style="color:var(--warn);font-size:.82rem;margin-bottom:12px;display:none;">⚠ Paste more of the job ad — include responsibilities and requirements for a better result.</div>
+      <div class="phone-tip" style="margin-bottom:14px;">💡 <strong style="color:var(--text);">Can't copy from Indeed's app?</strong> Tap the share button on the listing and select "Open in browser" — you can copy the full text from there.</div>
+      <button class="btn btn-primary" id="btn-analyse" disabled onclick="runAnalysis()">Analyse my CV →</button>
+      <button class="btn btn-ghost" onclick="go('upload')">← Back</button>
+    </div>
+  </div>
+
+  <!-- PROCESSING -->
+  <div id="s-processing" class="screen">
+    <header><div class="logo">Hired<span>Back</span></div></header>
+    <div class="processing-center">
+      <div style="font-size:3rem;margin-bottom:18px;">🔍</div>
+      <h2 style="margin-bottom:16px;">Analysing your CV...</h2>
+      <div class="dots" style="margin-bottom:22px;"><span></span><span></span><span></span></div>
+      <p class="proc-msg" id="proc-msg">Reading your CV...</p>
+    </div>
+    <div class="card2" style="font-size:.8rem;color:var(--muted);line-height:1.7;">
+      <strong style="color:var(--text);">While you wait...</strong><br/>
+      Most large companies use ATS software that automatically rejects CVs that don't match their criteria. We're checking yours right now.
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="s-results" class="screen">
+    <header><div class="logo">Hired<span>Back</span></div></header>
+    <div style="padding-top:24px;">
+      <h2 style="margin-bottom:4px;">Your results are in</h2>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:18px;">Here's an honest breakdown of what we found.</p>
+
+      <!-- ATS Scores -->
+      <div class="card">
+        <div style="font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;text-align:center;">ATS Compatibility Score</div>
+        <div class="score-wrap">
+          <div style="text-align:center;">
+            <svg id="ring-before" width="100" height="100" viewBox="0 0 100 100" style="display:block;margin:0 auto;">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" stroke-width="7"/>
+              <circle id="arc-before" cx="50" cy="50" r="40" fill="none" stroke="#F85149" stroke-width="7" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1s ease;"/>
+            </svg>
+            <div class="score-num" id="score-before-num" style="color:#F85149;text-align:center;margin-top:-60px;padding-bottom:6px;">0</div>
+            <div style="font-size:.6rem;color:var(--muted);text-align:center;margin-top:48px;">&nbsp;</div>
+            <div class="score-label">Before</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="diff-box" id="score-diff">+0</div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:4px;">points</div>
+          </div>
+          <div style="text-align:center;">
+            <svg id="ring-after" width="100" height="100" viewBox="0 0 100 100" style="display:block;margin:0 auto;">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" stroke-width="7"/>
+              <circle id="arc-after" cx="50" cy="50" r="40" fill="none" stroke="#3FB950" stroke-width="7" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1s ease;"/>
+            </svg>
+            <div class="score-num" id="score-after-num" style="color:#3FB950;text-align:center;margin-top:-60px;padding-bottom:6px;">0</div>
+            <div style="font-size:.6rem;color:var(--muted);text-align:center;margin-top:48px;">&nbsp;</div>
+            <div class="score-label">After</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" id="tab-diag" onclick="switchTab('diag')">🔍 Diagnosis</button>
+        <button class="tab" id="tab-cv" onclick="switchTab('cv')">📄 Rewritten CV</button>
+      </div>
+
+      <!-- Diagnostic panel -->
+      <div id="panel-diag">
+        <div class="card" style="margin-bottom:12px;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;">Why you weren't getting interviews</div>
+          <div class="scrollable" id="diag-list"></div>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost" id="btn-download-diag" onclick="downloadDiag()">⬇ Download Report</button>
+          <button class="btn btn-ghost" onclick="go('guide')">📘 CV Guide</button>
+        </div>
+      </div>
+
+      <!-- CV panel -->
+      <div id="panel-cv" style="display:none;">
+        <div class="card" style="margin-bottom:10px;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;">Your rewritten CV</div>
+          <div class="scrollable"><div class="cv-out" id="cv-output"></div></div>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost" id="btn-copy" onclick="copyCv()">Copy</button>
+          <button class="btn btn-ghost" onclick="downloadCv()">⬇ Download</button>
+        </div>
+        <div style="font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:14px;">Word doc export coming in v2.</div>
+      </div>
+
+      <hr class="divider"/>
+      <div style="text-align:center;">
+        <div style="color:var(--muted);font-size:.83rem;margin-bottom:10px;">Got another role to apply for?</div>
+        <button class="btn btn-primary" onclick="resetApp()">Use another credit →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIDE -->
+  <div id="s-guide" class="screen">
+    <header><div class="logo">Hired<span>Back</span></div></header>
+    <div style="padding-top:24px;">
+      <div class="tag" style="margin-bottom:12px;">Modern CV Guide</div>
+      <h2 style="margin-bottom:6px;">What a modern UK CV looks like</h2>
+      <p style="color:var(--muted);font-size:.85rem;line-height:1.6;margin-bottom:20px;">Your rewritten CV follows all of these conventions. Here's why each one matters.</p>
+
+      <div class="card">
+        <div style="font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;">Recommended layout order</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div class="step-num">1</div><div style="font-size:.86rem;">Personal profile (3–4 lines)</div></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div class="step-num">2</div><div style="font-size:.86rem;">Core skills / Key competencies</div></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div class="step-num">3</div><div style="font-size:.86rem;">Work experience (most recent first)</div></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div class="step-num">4</div><div style="font-size:.86rem;">Education &amp; qualifications</div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><div class="step-num">5</div><div style="font-size:.86rem;">Professional development / training</div></div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;">Do's and don'ts</div>
+        <div class="tip-row"><div class="tip-icon">🚫</div><div class="tip-text">No photo or date of birth — not used in modern UK CVs and can trigger unconscious bias.</div></div>
+        <div class="tip-row"><div class="tip-icon">🚫</div><div class="tip-text">No "References available on request" — assumed and wastes precious space.</div></div>
+        <div class="tip-row"><div class="tip-icon">🚫</div><div class="tip-text">No objective statement — replace with a punchy 3–4 line personal profile.</div></div>
+        <div class="tip-row"><div class="tip-icon">✅</div><div class="tip-text">Skills section near the top — ATS systems scan for keywords early in the document.</div></div>
+        <div class="tip-row"><div class="tip-icon">✅</div><div class="tip-text">Quantify your achievements — "Managed a team of 8, reducing costs by 15%" beats "Managed a team".</div></div>
+        <div class="tip-row"><div class="tip-icon">✅</div><div class="tip-text">Single-column layout — two-column designs often break ATS parsers.</div></div>
+        <div class="tip-row"><div class="tip-icon">✅</div><div class="tip-text">Keep to 2 pages — anything more won't be read.</div></div>
+        <div class="tip-row"><div class="tip-icon">✅</div><div class="tip-text">Mirror the job ad's exact keywords — ATS matches language precisely.</div></div>
+        <div class="tip-row"><div class="tip-icon">✅</div><div class="tip-text" style="margin-bottom:0;">Tailor every application — one CV sent to 50 jobs gets 0 responses.</div></div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="go('results')">← Back to results</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script>
+// ── State ────────────────────────────────────────────────────
+let cvFile = null;
+let resultsData = null;
+const MSGS = ["Reading your CV...","Analysing against the job ad...","Checking ATS compatibility...","Identifying what's holding you back...","Rewriting to modern UK standards...","Almost there — polishing your results..."];
+let msgInterval = null;
+
+// ── Password gate ─────────────────────────────────────────────
+const DEMO_PASSWORD = 'hiredback2026';
+function checkPassword() {
+  const val = document.getElementById('demo-password').value.trim().toLowerCase();
+  const err = document.getElementById('gate-err');
+  if (val === DEMO_PASSWORD) {
+    err.style.display = 'none';
+    go('welcome');
+  } else {
+    err.style.display = 'block';
+    document.getElementById('demo-password').value = '';
+  }
+}
+
+// ── Navigation ───────────────────────────────────────────────
+function go(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + screen).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── Plan selection ───────────────────────────────────────────
+function selectPlan(p) {
+  document.getElementById('pc-single').classList.toggle('sel', p === 'single');
+  document.getElementById('pc-bundle').classList.toggle('sel', p === 'bundle');
+}
+
+// ── File handling ─────────────────────────────────────────────
+function handleFileDrop(e) {
+  const f = e.dataTransfer.files[0];
+  if (f) processFile(f);
+}
+function handleFile(input) {
+  if (input.files[0]) processFile(input.files[0]);
+}
+function processFile(f) {
+  const err = document.getElementById('upload-err');
+  const n = f.name.toLowerCase();
+  if (!n.endsWith('.pdf') && !n.endsWith('.docx')) {
+    err.textContent = '⚠ Please upload a PDF or Word (.docx) file.'; err.style.display = 'block'; return;
+  }
+  if (f.size > 10 * 1024 * 1024) {
+    err.textContent = '⚠ File must be under 10MB.'; err.style.display = 'block'; return;
+  }
+  err.style.display = 'none';
+  cvFile = f;
+  document.getElementById('upload-idle').style.display = 'none';
+  document.getElementById('upload-done').style.display = 'block';
+  document.getElementById('upload-name').textContent = f.name;
+  document.getElementById('upload-size').textContent = (f.size / 1024).toFixed(0) + ' KB · Tap to change';
+  document.getElementById('btn-next-upload').disabled = false;
+}
+
+// ── Job ad validation ─────────────────────────────────────────
+function checkJobAd() {
+  const val = document.getElementById('job-ad').value;
+  const cc = document.getElementById('char-count');
+  const sw = document.getElementById('short-warn');
+  const btn = document.getElementById('btn-analyse');
+  cc.textContent = val.length + ' characters' + (val.length < 200 ? ' (min 200)' : ' ✓');
+  cc.style.color = val.length >= 200 ? 'var(--ok)' : 'var(--muted)';
+  sw.style.display = val.length > 0 && val.length < 200 ? 'block' : 'none';
+  btn.disabled = val.length < 200;
+}
+
+// ── Extract CV text ───────────────────────────────────────────
+async function extractCV(file) {
+  const n = file.name.toLowerCase();
+  if (n.endsWith('.pdf')) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res({ type: 'pdf', data: e.target.result.split(',')[1] });
+      r.onerror = rej; r.readAsDataURL(file);
+    });
+  } else {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = async e => {
+        try {
+          const result = await mammoth.extractRawText({ arrayBuffer: e.target.result });
+          res({ type: 'text', data: result.value });
+        } catch(err) { rej(err); }
+      };
+      r.onerror = rej; r.readAsArrayBuffer(file);
+    });
+  }
+}
+
+// ── Processing messages ───────────────────────────────────────
+function startMsgs() {
+  let i = 0;
+  const el = document.getElementById('proc-msg');
+  el.textContent = MSGS[0];
+  msgInterval = setInterval(() => { i = (i+1) % MSGS.length; el.textContent = MSGS[i]; }, 3000);
+}
+function stopMsgs() { clearInterval(msgInterval); }
+
+// ── Run analysis ──────────────────────────────────────────────
+async function runAnalysis() {
+  const jobAd = document.getElementById('job-ad').value;
+  document.getElementById('api-err').style.display = 'none';
+  go('processing'); startMsgs();
+
+  try {
+    const cv = await extractCV(cvFile);
+
+    const system = `You are an expert UK CV consultant helping recently redundant professionals return to work. You have deep knowledge of ATS systems, modern UK CV conventions, and what hiring managers want.
+
+Analyse the CV against the job advertisement and respond ONLY with a valid JSON object — no preamble, no markdown fences, just raw JSON.
+
+Required structure:
+{
+  "ats_score_before": <integer 0-100>,
+  "ats_score_after": <integer 0-100>,
+  "diagnostic": [
+    { "category": "<short label>", "issue": "<one sentence, specific and plain English>", "impact": "<high|medium|low>" }
+  ],
+  "rewritten_cv": "<rewritten CV as plain text. Each section MUST be separated by a blank line. Format exactly like this:\n\nFULL NAME\nPhone: | Email:\n\nPERSONAL PROFILE\n[3 lines of text]\n\nCORE SKILLS\n[bullet points]\n\nWORK EXPERIENCE\n[roles]\n\nEDUCATION & QUALIFICATIONS\n[details]>"
+}
+
+Rewritten CV rules — follow these precisely:
+- CRITICAL: You must ONLY use information, skills, and experience that exist in the original CV. Never invent, assume, or add skills, qualifications, or experience that are not explicitly stated. If a job ad requires something the candidate doesn't have, flag it in the diagnostic — do not add it to the CV.
+- CRITICAL: When referencing a tool, software, or skill from the CV, use ONLY the context in which it appears in the original CV. Never invent new contexts, applications, or achievements for it. For example, if the CV says "use of AutoCAD for jobs" do not write "prepared quotations using AutoCAD" — only describe it as it appears.
+- Personal Profile: 3 lines maximum, must include the job title from the ad and 2-3 key requirements from the ad using exact wording
+- Core Skills: exactly 10 bullet points, use keywords from the job ad only where they genuinely match skills in the original CV
+- Work Experience: last 3 roles in detail (3 bullets each, quantified achievements where they exist in the original CV), earlier roles as one line only — job title, company, dates
+- Education & Qualifications: concise list, group similar certifications together
+- No photo, no DOB, no objective statement, no references line
+- Every bullet point ends with a full stop
+- Strict 2 page maximum — be ruthless with brevity
+- UK English throughout
+
+ATS scoring rules:
+- Score before: honest assessment of the original CV against this specific job ad
+- Score after: must reflect exact keyword matching — if every requirement from the job ad appears in the rewritten CV, the after score should be 85 or above
+
+Diagnostic rules:
+- 4-6 points only, one sentence each, honest and specific
+- UK English, warm but direct tone`;
+
+    let messages;
+    if (cv.type === 'pdf') {
+      messages = [{ role: 'user', content: [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: cv.data }},
+        { type: 'text', text: 'Job advertisement:\n\n' + jobAd + '\n\nAnalyse this CV against the job ad and return your JSON.' }
+      ]}];
+    } else {
+      messages = [{ role: 'user', content: 'CV:\n\n' + cv.data + '\n\n---\n\nJob advertisement:\n\n' + jobAd + '\n\nAnalyse and return your JSON.' }];
+    }
+
+    const res = await fetch('/api/analyse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, system, messages })
+    });
+
+    if (!res.ok) throw new Error('API ' + res.status);
+    const data = await res.json();
+    const text = data.result || data.content?.map(b => b.text || '').join('') || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    resultsData = JSON.parse(clean);
+    stopMsgs();
+    renderResults();
+    go('results');
+
+  } catch(err) {
+    console.error(err);
+    stopMsgs();
+    go('jobad');
+    const e = document.getElementById('api-err');
+    e.textContent = '⚠ Something went wrong — please try again.';
+    e.style.display = 'block';
+  }
+}
+
+// ── Render results ────────────────────────────────────────────
+function scoreColor(s) { return s >= 70 ? 'var(--ok)' : s >= 45 ? 'var(--warn)' : 'var(--bad)'; }
+function arcOffset(score) {
+  const r = 40, circ = 2 * Math.PI * r;
+  return circ - (score / 100) * circ;
+}
+
+function renderResults() {
+  const d = resultsData;
+
+  // Scores
+  const circ = 2 * Math.PI * 40;
+  const ab = document.getElementById('arc-before');
+  const aa = document.getElementById('arc-after');
+  ab.style.strokeDasharray = circ;
+  ab.style.strokeDashoffset = arcOffset(d.ats_score_before);
+  ab.style.stroke = scoreColor(d.ats_score_before);
+  aa.style.strokeDasharray = circ;
+  aa.style.strokeDashoffset = arcOffset(d.ats_score_after);
+  aa.style.stroke = scoreColor(d.ats_score_after);
+
+  const nb = document.getElementById('score-before-num');
+  const na = document.getElementById('score-after-num');
+  nb.textContent = d.ats_score_before;
+  nb.style.color = scoreColor(d.ats_score_before);
+  na.textContent = d.ats_score_after;
+  na.style.color = scoreColor(d.ats_score_after);
+
+  const diff = d.ats_score_after - d.ats_score_before;
+  const db = document.getElementById('score-diff');
+  db.textContent = (diff > 0 ? '+' : '') + diff;
+  db.style.background = diff > 0 ? 'rgba(63,185,80,.15)' : 'rgba(248,81,73,.15)';
+  db.style.color = diff > 0 ? 'var(--ok)' : 'var(--bad)';
+
+  // Diagnostic
+  const dl = document.getElementById('diag-list');
+  dl.innerHTML = d.diagnostic.map((item, i) => `
+    <div class="diag-item" ${i === d.diagnostic.length - 1 ? 'style="border-bottom:none;"' : ''}>
+      <div class="diag-row">
+        <div class="diag-cat">${item.category}</div>
+        <span class="badge badge-${item.impact}">${item.impact}</span>
+      </div>
+      <div class="diag-issue">${item.issue}</div>
+    </div>`).join('');
+
+  // CV
+  document.getElementById('cv-output').textContent = d.rewritten_cv;
+
+  // Reset tab
+  switchTab('diag');
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(t) {
+  document.getElementById('tab-diag').classList.toggle('active', t === 'diag');
+  document.getElementById('tab-cv').classList.toggle('active', t === 'cv');
+  document.getElementById('panel-diag').style.display = t === 'diag' ? 'block' : 'none';
+  document.getElementById('panel-cv').style.display = t === 'cv' ? 'block' : 'none';
+}
+
+// ── Copy / Download ───────────────────────────────────────────
+function copyCv() {
+  if (!resultsData) return;
+  navigator.clipboard.writeText(resultsData.rewritten_cv);
+  const b = document.getElementById('btn-copy');
+  b.textContent = '✓ Copied!';
+  setTimeout(() => b.textContent = 'Copy', 2500);
+}
+function downloadDiag() {
+  if (!resultsData) return;
+  const d = resultsData;
+  const date = new Date().toLocaleDateString('en-GB');
+  let text = `HIREDBACK - CV DIAGNOSTIC REPORT\n`;
+  text += `Generated: ${date}\n`;
+  text += `${'-'.repeat(40)}\n\n`;
+  text += `ATS COMPATIBILITY SCORE\n`;
+  text += `Before: ${d.ats_score_before}/100\n`;
+  text += `After:  ${d.ats_score_after}/100\n`;
+  text += `Improvement: +${d.ats_score_after - d.ats_score_before} points\n\n`;
+  text += `${'-'.repeat(40)}\n\n`;
+  text += `WHY YOU WERE NOT GETTING INTERVIEWS\n\n`;
+  d.diagnostic.forEach((item, i) => {
+    text += `${i + 1}. ${item.category} [${item.impact.toUpperCase()}]\n`;
+    text += `   ${item.issue}\n\n`;
+  });
+  text += `${'-'.repeat(40)}\n`;
+  text += `hiredback.co.uk - Built for people who deserve better than redundancy.\n`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  a.download = 'hiredback-diagnostic-report.txt'; a.click();
+}
+
+function downloadCv() {
+  if (!resultsData) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([resultsData.rewritten_cv], { type: 'text/plain;charset=utf-8' }));
+  a.download = 'my-rewritten-cv.txt'; a.click();
+}
+
+// ── Reset ────────────────────────────────────────────────────
+function resetApp() {
+  cvFile = null; resultsData = null;
+  document.getElementById('upload-idle').style.display = 'block';
+  document.getElementById('upload-done').style.display = 'none';
+  document.getElementById('btn-next-upload').disabled = true;
+  document.getElementById('job-ad').value = '';
+  document.getElementById('char-count').textContent = '0 characters (min 200)';
+  document.getElementById('char-count').style.color = 'var(--muted)';
+  document.getElementById('btn-analyse').disabled = true;
+  go('upload');
+}
+</script>
+</body>
+</html>
